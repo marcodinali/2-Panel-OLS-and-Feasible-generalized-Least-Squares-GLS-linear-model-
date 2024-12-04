@@ -1,0 +1,191 @@
+// ###############################################
+// DISCLAIMER
+// ###############################################
+
+// This text, data, and model were produced by me and are licensed for use. This means you can use them to learn and apply these codes to your own research. 
+// Please cite this work when appropriate. This database was created by me and is available for use under the specified license// This data base is created by myself and is available for use under the specified LICENSE. You can use it under this license. 
+// This code is for Stata. Some commands may not work or may require specific packages. Please check your Stata version and installed packages before running the code.
+
+// First step after importing the variables is to define the panel
+import delimited "https://raw.githubusercontent.com/marcodinali/2-Panel-OLS-and-Feasible-generalized-Least-Squares-GLS-linear-model-/refs/heads/main/Data_firms.txt"
+
+// You can download and import manualy from a tx file too (always use dots in your data inseat of comma for all values. Use txt file for the best.). 
+// To mitigate potential pathing errors, it is advisable to employ a simplified file location, such as the "Desktop" directory, for initial file storage)
+
+// For macOS use the following path:
+
+insheet using "/Users/YourComputerName/Desktop/Filename.txt"
+
+// For Windows use the following path:
+
+insheet using "C:\Users\YourComputerName\Desktop\Filename.txt" 
+
+
+// The commands demonstrated herein may be adapted and replicated for application within your own respective panels and variables, enabling customization and extension of the presented techniques.
+
+// Description of variables
+// ipr = Property rights index
+// roa = Return on assets
+// ros = Return on sales
+// rd = Research and Development
+// sales = annual sales
+// leverage = leverage of companies.
+// size = company size based on total assets.
+// age = firm age
+
+
+// Identify your panel 
+xtset id t 
+
+// The command "set more off" disables pagination, allowing the entirety of the output to be displayed simultaneously at once. 
+set more off
+
+
+// To facilitate analysis, we will employ a logarithmic transformation of the variables. To transform the variables into natural logarithm use the command "gen" to generate a new variable name equal the variable with ln(your variable).
+// gen ln_your_new_variable = ln(your_variable_from_the_database)
+gen ln_size = ln(size)
+gen ln_age = ln(age)
+
+
+// create a lag. You can also use directly in your equation l."variable name", example: l.roa. It will produce the same results.
+gen lroa = l.roa
+gen lros = l.ros
+
+// VIF problem
+// pwcorr is the command used to create the correlation matrix (pairwise correlations, Pearson method)
+// pwcorr x1 x2 x3 x4 ... 
+
+// If you want the correlation matrix with significance values install the following package:
+net install asdoc, from(http://fintechprofessor.com) replace
+// Just change the significance: sig star(.10) sig star(.05) sig star(.01). Always change the name of the document (Myfile.doc) and run a new one with different significance (the document is in the folder where you imported or saved you work and database)
+
+pwcorr ros rd ipr sales leverage ln_size ln_age
+
+// With significance, use: , asdoc pwcorr x1 x2 x3 x4 ..., sig star(.01)
+asdoc pwcorr ros rd ipr sales leverage ln_size ln_age, sig star(.05) replace
+
+// Variance Inflation Factor (VIF) 
+reg ros rd ipr sales leverage ln_size ln_age
+vif
+// For more detail check: Hair, J. F., Jr., Black, W. C., Babin, B. J., & Anderson, R. E. (2010). Multivariate data analysis: A global perspective. Pearson Education International.
+
+// Descriptive statistics
+sum  ros rd ipr sales leverage ln_size ln_age
+
+// Also
+// n = number of observations, mean = average, sd = standard deviation, p50 = median, min = minimum and max = maximum values.
+tabstat ros rd ipr sales leverage ln_size ln_age , stat(N, mean, sd, p50, min, max)
+
+// Wooldridge test for serial correlation
+// For more detail check: Wooldridge, J. M. (2009). Introductory econometrics: A modern approach. South-Western Cengage Learning.
+// Command: xtserial x1 x2 x3 x4...
+// Perhaps you need the package:
+net install st0039
+// if not work use
+net from http://www.stata-journal.com/software/sj3-2/
+
+// Ho: no first-order autocorrelation
+xtserial ros rd ipr sales leverage ln_size ln_age 
+
+// Modified Wald test for groupwise heteroskedasticity test for heteroskedasticity. 
+// Perform panel regression using the command: xtreg x1 x2 x3..., fe
+// The fe command must be included at the end after the comma. Fe = fixed effect.
+// Install
+ssc install xtest3 
+// Ho: Homocedasticity
+xtreg   ros rd ipr sales leverage ln_size ln_age, fe
+xttest3	
+
+// Hausman test
+// Fixed effects first (fe).
+// Save the regression with the command: estimate store "any name".
+// For simplication I just used: estimate store fe
+// Do the same for random effects (re), estimate store re
+// sigmamore is a option that increase the efficiency of the analysis procedure
+
+xtreg  ros rd ipr sales leverage ln_size ln_age, fe
+estimate store fe
+
+xtreg  ros rd ipr sales leverage ln_size ln_age, re
+estimate store re
+hausman fe re, sigmamore
+
+
+// If the test shows p < 0.05 (5%) you should use the fe (fixed effect) command in the following steps for xtreg regression (OLS panel).
+// In our case we go with fixed effect once p-value is lower that 0.05 (5%).
+// Use the vce(robust) or vce(cluster id) correct both the heteroskedasticity and autocorrelation.
+// Observation: xtreg command is used for standard panel OLS. Always use fe option for fixed effects. Standard OLS already uses random effects... If you get a Hausman estimate for a random effect, re (random effects) use re instead or remove it. 
+
+
+// #########################################################################
+// Ordinary Least Squares (OLS) with fixed-effect and robust standard erros
+// #########################################################################
+
+// OLS
+// Model 1 (usually test only your control variables)
+xtreg ros sales leverage ln_size ln_age  y_2010-y_2019, fe vce(robust)
+
+// Model 2 - R&D (variable: rd)
+xtreg ros rd sales leverage ln_size ln_age  y_2010-y_2019, fe vce(robust)
+
+// Model 3 - Property Rights (variable: ipr)
+xtreg ros ipr sales leverage ln_size ln_age  y_2010-y_2019, fe vce(robust)
+
+// Model 4 -  Moderating effect
+// Depeding of your software version the use of for example, c.variable1##c.variable2 will fail. Some old versions cant handle this equation. You can generate an interacted variable by multiplying them.
+gen your_new_variable = variable1*variable2
+gen iprXrd = ipr*rd
+
+// Both estimates produce the same output. Two (##) serve to include the both terms plus interaction. If you use only # you need to include manually ipr rd c.ipr#c.rd
+// xtreg ros ipr rd iprXrd sales leverage ln_size ln_age  y_2010-y_2019, fe vce(robust)
+// xtreg ros ipr rd c.ipr#c.rd sales leverage ln_size ln_age  y_2010-y_2019, fe vce(robust)
+xtreg ros c.ipr##c.rd sales leverage ln_size ln_age  y_2010-y_2019, fe vce(robust)
+
+
+// As you can see the results is not much good. There are possible explanations: 1) use more variables or change your control variables. Increase the number of cross-sections units (countries) and perhaps extend your time series (in this case the time series is large enought).
+
+// Lest try a new estimator ? most times bad estimating results happen because you are using the wrong estimator. 
+// Let's try the Feasibel Generalized Least Squares (FGLS) a GLS linear model. 
+
+// ##############################################################
+// Feasible Generalized Least Squares (FGLS)
+// ##############################################################
+
+// I used the FGLS model as a robustness test. It is used when the panel is N > T. Number of firms is higher that time series. 
+// Also, considering we found heteroskedasticity and autocorrelation problems we need to include the options panels(heteroskedastic) corr(ar1), respectivelly. If you only have heteroskedastic, use only panels(heteroskedastic).
+// The options force is used once the panel is umbalanced. You have a perfectly balanced panel you don't need this options.
+
+// Model 1 (usually test only your control variables)
+xtgls ros sales leverage ln_size ln_age  y_2010-y_2019, panels(heteroskedastic) corr(ar1) force
+
+// Model 2 - R&D (variable: rd)
+xtgls ros rd sales leverage ln_size ln_age  y_2010-y_2019, panels(heteroskedastic) corr(ar1) force
+
+// Model 3 - Property Rights (variable: ipr)
+xtgls ros ipr sales leverage ln_size ln_age  y_2010-y_2019, panels(heteroskedastic) corr(ar1) force
+
+// Model 4 -  Moderating effect
+// xtgls ros ipr rd iprXrd sales leverage ln_size ln_age  y_2010-y_2019, panels(heteroskedastic) corr(ar1) force
+xtgls ros c.ipr##c.rd sales leverage ln_size ln_age  y_2010-y_2019, panels(heteroskedastic) corr(ar1) force
+
+// Now results seems much better. This mean our model is correct? Maybe. The correct is test with other dependent variable (new variable or lagged one) or sellect other estimator to check if results remain near or the same. 
+// Let's use the lagged ros (l.ros)
+
+// Model 1 (usually test only your control variables)
+xtreg l.ros sales leverage ln_size ln_age  y_2010-y_2019, fe vce(robust)
+
+// Model 2 - R&D (variable: rd)
+xtreg l.ros rd sales leverage ln_size ln_age  y_2010-y_2019, fe vce(robust)
+
+// Model 3 - Property Rights (variable: ipr)
+xtreg l.ros ipr sales leverage ln_size ln_age  y_2010-y_2019, fe vce(robust)
+
+// Model 4 -  Moderating effect. 
+xtreg l.ros c.ipr##c.rd sales leverage ln_size ln_age  y_2010-y_2019, fe vce(robust)
+
+// #########################################################################
+// Well... as we can see, results ar enot the best but remains near for model 3 and 4. Using the lagged (l.ros) we obtain near results of our prior FGLS regression. 
+// Observation: Again, use that lagged variable that you create at the begining (lros) and (l.ros) will produce the same results.
+// Just check it
+xtreg l.ros sales leverage ln_size ln_age  y_2010-y_2019, fe vce(robust)
+xtreg lros sales leverage ln_size ln_age  y_2010-y_2019, fe vce(robust)
