@@ -87,9 +87,8 @@ tabstat ros rd ipr sales leverage ln_size ln_age , stat(N, mean, sd, p50, min, m
 // For more detail check: Wooldridge, J. M. (2009). Introductory econometrics: A modern approach. South-Western Cengage Learning.
 // Command: xtserial x1 x2 x3 x4...
 // Perhaps you need the package:
+net describe st0039, from(http://www.stata-journal.com/software/sj3-2)
 net install st0039
-// if not work use
-net from http://www.stata-journal.com/software/sj3-2/
 
 // Ho: no first-order autocorrelation
 xtserial ros rd ipr sales leverage ln_size ln_age 
