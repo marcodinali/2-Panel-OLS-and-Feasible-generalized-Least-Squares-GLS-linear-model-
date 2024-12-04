@@ -97,7 +97,7 @@ xtserial ros rd ipr sales leverage ln_size ln_age
 // Perform panel regression using the command: xtreg x1 x2 x3..., fe
 // The fe command must be included at the end after the comma. Fe = fixed effect.
 // Install
-ssc install xtest3 
+ssc install xttest3
 // Ho: Homocedasticity
 xtreg   ros rd ipr sales leverage ln_size ln_age, fe
 xttest3	
