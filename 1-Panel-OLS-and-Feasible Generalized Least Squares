@@ -9,6 +9,13 @@
 // First step after importing the variables is to define the panel
 import delimited "https://raw.githubusercontent.com/marcodinali/2-Panel-OLS-and-Feasible-generalized-Least-Squares-GLS-linear-model-/refs/heads/main/Data_firms.txt"
 
+// ##############//#########################################
+// 1 - Panel OLS - fixed effect vs Random effects
+// ########################################################
+
+// First step after importing the variables is to define the panel
+import delimited "https://raw.githubusercontent.com/marcodinali/OLS-Regression-Prais-Winsten-regression-and-2SLS/refs/heads/main/Data_country.txt"
+
 // You can download and import manualy from a tx file too (always use dots in your data inseat of comma for all values. Use txt file for the best.). 
 // To mitigate potential pathing errors, it is advisable to employ a simplified file location, such as the "Desktop" directory, for initial file storage)
 
