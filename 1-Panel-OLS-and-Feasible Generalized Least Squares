@@ -150,8 +150,25 @@ xtreg ros c.ipr##c.rd sales leverage ln_size ln_age  y_2010-y_2019, fe vce(robus
 
 // As you can see the results is not much good. There are possible explanations: 1) use more variables or change your control variables. Increase the number of cross-sections units (countries) and perhaps extend your time series (in this case the time series is large enought).
 
+// Now results seems much better. This mean our model is correct? Maybe. The correct is test with other dependent variable (new variable or lagged one) or sellect other estimator to check if results remain near or the same. 
+// Let's use the lagged ros (l.ros)
+
+// Model 1 (usually test only your control variables)
+xtreg l.ros sales leverage ln_size ln_age  y_2010-y_2019, fe vce(robust)
+
+// Model 2 - R&D (variable: rd)
+xtreg l.ros rd sales leverage ln_size ln_age  y_2010-y_2019, fe vce(robust)
+
+// Model 3 - Property Rights (variable: ipr)
+xtreg l.ros ipr sales leverage ln_size ln_age  y_2010-y_2019, fe vce(robust)
+
+// Model 4 -  Moderating effect. 
+xtreg l.ros c.ipr##c.rd sales leverage ln_size ln_age  y_2010-y_2019, fe vce(robust)
+
+// ##############################################################
+
 // Lest try a new estimator ? most times bad estimating results happen because you are using the wrong estimator. 
-// Let's try the Feasibel Generalized Least Squares (FGLS) a GLS linear model. 
+// Let's try the Feasibel Generalized Least Squares (FGLS) a GLS model. 
 
 // ##############################################################
 // Feasible Generalized Least Squares (FGLS)
@@ -173,21 +190,6 @@ xtgls ros ipr sales leverage ln_size ln_age  y_2010-y_2019, panels(heteroskedast
 // Model 4 -  Moderating effect
 // xtgls ros ipr rd iprXrd sales leverage ln_size ln_age  y_2010-y_2019, panels(heteroskedastic) corr(ar1) force
 xtgls ros c.ipr##c.rd sales leverage ln_size ln_age  y_2010-y_2019, panels(heteroskedastic) corr(ar1) force
-
-// Now results seems much better. This mean our model is correct? Maybe. The correct is test with other dependent variable (new variable or lagged one) or sellect other estimator to check if results remain near or the same. 
-// Let's use the lagged ros (l.ros)
-
-// Model 1 (usually test only your control variables)
-xtreg l.ros sales leverage ln_size ln_age  y_2010-y_2019, fe vce(robust)
-
-// Model 2 - R&D (variable: rd)
-xtreg l.ros rd sales leverage ln_size ln_age  y_2010-y_2019, fe vce(robust)
-
-// Model 3 - Property Rights (variable: ipr)
-xtreg l.ros ipr sales leverage ln_size ln_age  y_2010-y_2019, fe vce(robust)
-
-// Model 4 -  Moderating effect. 
-xtreg l.ros c.ipr##c.rd sales leverage ln_size ln_age  y_2010-y_2019, fe vce(robust)
 
 // #########################################################################
 // Well... as we can see, results ar enot the best but remains near for model 3 and 4. Using the lagged (l.ros) we obtain near results of our prior FGLS regression. 
