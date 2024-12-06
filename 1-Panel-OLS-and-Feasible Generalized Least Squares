@@ -192,7 +192,9 @@ xtgls ros ipr sales leverage ln_size ln_age  y_2010-y_2019, panels(heteroskedast
 xtgls ros c.ipr##c.rd sales leverage ln_size ln_age  y_2010-y_2019, panels(heteroskedastic) corr(ar1) force
 
 // #########################################################################
-// Well... as we can see, results ar enot the best but remains near for model 3 and 4. Using the lagged (l.ros) we obtain near results of our prior FGLS regression. 
+// Observation
+// #########################################################################
+// Well... as we can see, results are not the best but remains near for model 3 and 4. Using the lagged (l.ros) we obtain near results of our prior FGLS regression. 
 // Observation: Again, use that lagged variable that you create at the begining (lros) and (l.ros) will produce the same results.
 // Just check it
 xtreg l.ros sales leverage ln_size ln_age  y_2010-y_2019, fe vce(robust)
