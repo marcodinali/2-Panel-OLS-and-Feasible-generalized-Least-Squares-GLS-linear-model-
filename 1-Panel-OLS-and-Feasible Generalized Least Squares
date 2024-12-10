@@ -145,14 +145,16 @@ xtreg ros rd sales leverage ln_size ln_age  y_2010-y_2019, fe vce(robust)
 xtreg ros ipr sales leverage ln_size ln_age  y_2010-y_2019, fe vce(robust)
 
 // Model 4 -  Moderating effect
-// Depeding of your software version the use of for example, c.variable1##c.variable2 will fail. Some old versions cant handle this equation. You can generate an interacted variable by multiplying them.
+// Depeding of your software version the use of for example, c.variable1##c.variable2 will fail, resulting in error. You can generate an interacted variable by multiplying them.
 gen your_new_variable = variable1*variable2
 gen iprXrd = ipr*rd
+
+xtreg ros c.ipr##c.rd sales leverage ln_size ln_age  y_2010-y_2019, fe vce(robust)
 
 // Both estimates produce the same output. Two (##) serve to include the both terms plus interaction. If you use only # you need to include manually ipr rd c.ipr#c.rd
 // xtreg ros ipr rd iprXrd sales leverage ln_size ln_age  y_2010-y_2019, fe vce(robust)
 // xtreg ros ipr rd c.ipr#c.rd sales leverage ln_size ln_age  y_2010-y_2019, fe vce(robust)
-xtreg ros c.ipr##c.rd sales leverage ln_size ln_age  y_2010-y_2019, fe vce(robust)
+// xtreg ros c.ipr##c.rd sales leverage ln_size ln_age  y_2010-y_2019, fe vce(robust)
 
 
 // As you can see the results is not much good. There are possible explanations: 1) use more variables or change your control variables. Increase the number of cross-sections units (countries) and perhaps extend your time series (in this case the time series is large enought).
