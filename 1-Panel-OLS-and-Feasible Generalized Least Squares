@@ -9,26 +9,33 @@
 // First step after importing the variables is to define the panel
 import delimited "https://raw.githubusercontent.com/marcodinali/2-Panel-OLS-and-Feasible-generalized-Least-Squares-GLS-linear-model-/refs/heads/main/Data_firms.txt"
 
-// ##############//#########################################
+// #######################################################
 // 1 - Panel OLS - fixed effect vs Random effects
-// ########################################################
+// #######################################################
 
 // First step after importing the variables is to define the panel
+// This method only works on STATA 14 or more recent versions 
+
 import delimited "https://raw.githubusercontent.com/marcodinali/OLS-Regression-Prais-Winsten-regression-and-2SLS/refs/heads/main/Data_country.txt"
 
 // You can download and import manualy from a tx file too (always use dots in your data inseat of comma for all values. Use txt file for the best.). 
 // To mitigate potential pathing errors, it is advisable to employ a simplified file location, such as the "Desktop" directory, for initial file storage)
 
+// #######################################################
 // For macOS use the following path:
+// Download data: Data_country.txt and import using the path bellow. 
 
 insheet using "/Users/YourComputerName/Desktop/Filename.txt"
+// Example: insheet using "/Users/marcodinali/Desktop/Data_firms.txt"
 
 // For Windows use the following path:
+// Example: insheet using "C:\Users\marcodinali/Desktop/Data_firms.txt" 
 
 insheet using "C:\Users\YourComputerName\Desktop\Filename.txt" 
 
+// #######################################################
 
-// The commands demonstrated herein may be adapted and replicated for application within your own respective panels and variables, enabling customization and extension of the presented techniques.
+// The commands and sytax functions bellow may be adapted and replicated for application within your own respective panels and variables, enabling customization and extension of the presented techniques.
 
 // Description of variables
 // ipr = Property rights index
@@ -175,8 +182,9 @@ xtreg l.ros c.ipr##c.rd sales leverage ln_size ln_age  y_2010-y_2019, fe vce(rob
 // ##############################################################
 
 // I used the FGLS model as a robustness test. It is used when the panel is N > T. Number of firms is higher that time series. 
-// Also, considering we found heteroskedasticity and autocorrelation problems we need to include the options panels(heteroskedastic) corr(ar1), respectivelly. If you only have heteroskedastic, use only panels(heteroskedastic).
-// The options force is used once the panel is umbalanced. You have a perfectly balanced panel you don't need this options.
+// Also, considering we found heteroskedasticity and autocorrelation problems we need to include the options panels(heteroskedastic) corr(ar1), respectivelly. 
+// If you only have heteroskedastic, use only panels(heteroskedastic).
+// The options "force" is used only for unbalanced panel. If you have a perfectly balanced panel you don't need this options.
 
 // Model 1 (usually test only your control variables)
 xtgls ros sales leverage ln_size ln_age  y_2010-y_2019, panels(heteroskedastic) corr(ar1) force
@@ -196,6 +204,7 @@ xtgls ros c.ipr##c.rd sales leverage ln_size ln_age  y_2010-y_2019, panels(heter
 // #########################################################################
 // Well... as we can see, results are not the best but remains near for model 3 and 4. Using the lagged (l.ros) we obtain near results of our prior FGLS regression. 
 // Observation: Again, use that lagged variable that you create at the begining (lros) and (l.ros) will produce the same results.
-// Just check it
+// Just check it:
+
 xtreg l.ros sales leverage ln_size ln_age  y_2010-y_2019, fe vce(robust)
 xtreg lros sales leverage ln_size ln_age  y_2010-y_2019, fe vce(robust)
